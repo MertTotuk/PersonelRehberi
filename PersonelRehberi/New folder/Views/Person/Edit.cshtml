@@ -1,0 +1,108 @@
+﻿@model PersonelRehberi.Models.PERSON
+
+@{
+    ViewBag.Title = "Edit";
+}
+
+<h2>Edit</h2>
+
+@using (Html.BeginForm()) {
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true)
+
+    <fieldset>
+        <legend>PERSON</legend>
+
+        <div class="editor-label">
+            @Html.LabelFor(model => model.Identity)
+        </div>
+        <div class="editor-field">
+            @Html.EditorFor(model => model.Identity)
+            @Html.ValidationMessageFor(model => model.Identity)
+        </div>
+
+        <div class="editor-label">
+            @Html.LabelFor(model => model.PersonName)
+        </div>
+        <div class="editor-field">
+            @Html.EditorFor(model => model.PersonName)
+            @Html.ValidationMessageFor(model => model.PersonName)
+        </div>
+
+        <div class="editor-label">
+            @Html.LabelFor(model => model.PersonSurname)
+        </div>
+        <div class="editor-field">
+            @Html.EditorFor(model => model.PersonSurname)
+            @Html.ValidationMessageFor(model => model.PersonSurname)
+        </div>
+
+        <div class="editor-label">
+            @Html.LabelFor(model => model.Birthdate)
+        </div>
+        <div class="editor-field">
+            @Html.EditorFor(model => model.Birthdate)
+            @Html.ValidationMessageFor(model => model.Birthdate)
+        </div>
+
+        <div class="editor-label">
+            @Html.LabelFor(model => model.Email)
+        </div>
+        <div class="editor-field">
+            @Html.EditorFor(model => model.Email)
+            @Html.ValidationMessageFor(model => model.Email)
+        </div>
+
+        <div class="editor-label">
+            @Html.LabelFor(model => model.PhoneNumber1)
+        </div>
+        <div class="editor-field">
+            @Html.EditorFor(model => model.PhoneNumber1)
+            @Html.ValidationMessageFor(model => model.PhoneNumber1)
+        </div>
+
+        <div class="editor-label">
+            @Html.LabelFor(model => model.PhoneNumber2)
+        </div>
+        <div class="editor-field">
+            @Html.EditorFor(model => model.PhoneNumber2)
+            @Html.ValidationMessageFor(model => model.PhoneNumber2)
+        </div>
+
+        <div class="editor-label">
+            @Html.LabelFor(model => model.HireDate)
+        </div>
+        <div class="editor-field">
+            @Html.EditorFor(model => model.HireDate)
+            @Html.ValidationMessageFor(model => model.HireDate)
+        </div>
+
+        <div class="editor-label">
+            @Html.LabelFor(model => model.DepartmentId, "DEPARTMENT")
+        </div>
+        <div class="editor-field">
+            @Html.DropDownList("DepartmentId", String.Empty)
+            @Html.ValidationMessageFor(model => model.DepartmentId)
+        </div>
+
+        <div class="editor-label">
+            @Html.LabelFor(model => model.TitleId, "TITLE")
+        </div>
+        <div class="editor-field">
+            @Html.DropDownList("TitleId", String.Empty)
+            @Html.ValidationMessageFor(model => model.TitleId)
+        </div>
+
+        <p>
+            <input type="submit" value="Save" />
+        </p>
+    </fieldset>
+}
+
+<div>
+    @Html.ActionLink("Back to List", "Index")
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}

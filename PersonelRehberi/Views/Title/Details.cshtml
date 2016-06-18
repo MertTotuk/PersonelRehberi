@@ -1,0 +1,29 @@
+﻿@model PersonelRehberi.Models.TITLE
+
+@{
+    ViewBag.Title = "Details";
+}
+
+<h2>Details</h2>
+
+<fieldset>
+    <legend>TITLE</legend>
+
+    <div class="display-label">
+         @Html.DisplayNameFor(model => model.TitleName)
+    </div>
+    <div class="display-field">
+        @Html.DisplayFor(model => model.TitleName)
+    </div>
+
+    <div class="display-label">
+         @Html.DisplayNameFor(model => model.TitleDescription)
+    </div>
+    <div class="display-field">
+        @Html.DisplayFor(model => model.TitleDescription)
+    </div>
+</fieldset>
+<p>
+    @Html.ActionLink("Edit", "Edit", new { id=Model.TitleId }) |
+    @Html.ActionLink("Back to List", "Index")
+</p>

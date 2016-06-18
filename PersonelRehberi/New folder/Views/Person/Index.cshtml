@@ -1,0 +1,764 @@
+﻿@model IEnumerable<PersonelRehberi.Models.PERSON>
+
+@{
+    ViewBag.Title = "Personel Listesi";
+
+}
+
+<link rel="stylesheet" href="~/scripts/jqwidgets/styles/jqx.base.css" type="text/css" />
+<link rel="stylesheet" href="~/Scripts/jqwidgets/styles/jqx.energyblue.css" type="text/css" />
+<link href="~/Scripts/jqwidgets/styles/jqx.ui-start.css" rel="stylesheet" />
+<script type="text/javascript" src="~/scripts/SaveScript.js"></script>
+<script type="text/javascript" src="~/Scripts/DeleteScript.js"></script>
+<script type="text/javascript" src="~/Scripts/TitleSaveScript.js"></script>
+<script type="text/javascript" src="~/Scripts/DepartmentSaveScript.js"></script>
+<script type="text/javascript" src="~/Scripts/DeleteTitleScript.js"></script>
+<script type="text/javascript" src="~/Scripts/DeleteDepartmentScript.js"></script>
+<script type="text/javascript" src="~/Scripts/AddDepartmentScript.js"></script>
+<script type="text/javascript" src="~/Scripts/AddTitleScript.js"></script>
+<script type="text/javascript" src="~/Scripts/AddPersonScript.js"></script>
+<script src="~/Scripts/jqwidgets/jqx-all.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        var process;
+        // prepare the data
+        $('#Birthdate').jqxDateTimeInput({ width: '250px', height: '25px', theme: 'ui-start' });
+        $('#HireDate').jqxDateTimeInput({ width: '250px', height: '25px', theme: 'ui-start' });
+        $('#jqxTabs').jqxTabs({ width: '1255px', autoHeight: true, position: 'top', theme: 'ui-start', animationType: 'fade', enableScrollAnimation: true });
+
+
+
+        var titlesource =
+            {
+                datatype: "json",
+                datafields: [
+                    { name: 'TitleId' },
+                    { name: 'TitleName', type: 'string' }
+
+                ],
+                id: 'TitleId',
+                url: 'getTitle'
+            };
+        var dataAdapterT = new $.jqx.dataAdapter(titlesource);
+        
+        $('#TitleName').jqxDropDownList({ source: dataAdapterT, theme: 'ui-start', displayMember: 'TitleName', valueMember: 'TitleId', width: '200px', height: '25px' });
+        var departmentsource =
+            {
+                datatype: "json",
+                datafields: [
+                    { name: 'DepartmentId' },
+                    { name: 'DepartmentName', type: 'string' }
+
+                ],
+                id: 'DepartmentId',
+                url: 'getDepartment'
+            };
+        var dataAdapterD = new $.jqx.dataAdapter(departmentsource);
+        $('#DepartmentName').jqxDropDownList({ source: dataAdapterD, theme: 'ui-start', displayMember: 'DepartmentName', valueMember: 'DepartmentId', width: '200px', height: '25px' });
+        var source =
+            {
+                datatype: "json",
+                datafields: [
+                     { name: 'Identity', type: 'number' },
+                     { name: 'PersonName', type: 'string' },
+                     { name: 'PersonSurname', type: 'string' },
+                     { name: 'Birthdate', type: 'date', cellsformat: 'dd.MM.yyyy' },
+                     { name: 'Email', type: 'string' },
+                     { name: 'PhoneNumber1', type: 'string' },
+                     { name: 'PhoneNumber2', type: 'string' },
+                     { name: 'HireDate', type: 'date', format: "dd.MM.yyyy" },
+                     { name: 'TitleName', type: 'string' },
+                     { name: 'DepartmentName', type: 'string' },
+                     { name: 'DepartmentId', type: 'number' },
+                     { name: 'TitleId', type: 'number' },
+                     { name: 'Picture', type: 'string' },
+                    //TODO: DepartmentId eklenecek, getPerson metodunda geri döndürülecek
+                ],
+                id: 'Identity',
+                url: 'getPerson'
+            };
+        //title grid datafield oluşturma
+        var titleSource = {
+            datatype: "json",
+            datafields: [
+                { name: 'TitleId', type: 'number' },
+                { name: 'TitleName', type: 'string' },
+                { name: 'TitleDescription', type: 'string' }
+
+            ],
+            id: 'TitleId',
+            url: 'getTitle'
+        };
+        //department grid datafield oluşturma
+        var DepartmentSource = {
+            datatype: "json",
+            datafields: [
+                { name: 'DepartmentId', type: 'number' },
+                { name: 'DepartmentName', type: 'string' },
+                { name: 'DepartmentDescription', type: 'string' }
+
+            ],
+            id: 'DepartmentId',
+            url: 'getDepartment'
+        };
+
+        var dataAdapter = new $.jqx.dataAdapter(source);
+        var editrow = -1;
+        var deleterow = -1;
+        var tdataAdapter = new $.jqx.dataAdapter(titleSource);
+        var ddataAdapter = new $.jqx.dataAdapter(DepartmentSource);
+        ///////////////initialize departments dgrid
+        $("#dgrid").jqxGrid(
+           {
+               width: 1250,
+               source: ddataAdapter,
+               sortable: true,
+               showfilterrow: true,
+               filterable: true,
+               pageable: true,
+               autoheight: true,
+               theme: 'ui-start',
+               showtoolbar: true,
+               rendertoolbar: function (toolbar) {
+                   var me = this;
+                   var container = $("<div style='margin: 5px;'></div>");
+                   toolbar.append(container);
+                   container.append('<input id="adddepartmentrowbutton" type="button" value="Add New Row" />');
+
+                   container.append('<input style="margin-left: 5px;" id="deletedepartmentrowbutton" type="button" value="Delete Selected Row" />');
+
+                   $("#adddepartmentrowbutton").jqxButton({ theme: 'ui-start' });
+
+                   $("#deletedepartmentrowbutton").jqxButton({ theme: 'ui-start' });
+
+
+                   // create new row.
+                   $("#adddepartmentrowbutton").on('click', function () {
+                       process = 'add';
+
+                       $("#DepartmentName1").val(' ');
+                       $("#DepartmentDescription").val(' ');
+                       $("#popupWindowDepartment").jqxWindow('open');
+
+
+                   });
+                   // delete row.
+                   $("#deletedepartmentrowbutton").on('click', function () {
+                       var Identity = $("#DepartmentId").val();
+                       deleteDepartmentData(Identity);
+                       $('#dgrid').jqxGrid('refreshdata');
+
+                   });
+               },
+               columns: [
+                   //{ text: "DepartmentId", datafield: "DepartmentId" },
+                   { text: "DepartmentName", datafield: "DepartmentName" },
+                   { text: "DepartmentDescription", datafield: "DepartmentDescription" },
+                   {
+                       text: ' ',
+                       datafield: 'Edit',
+                       width: '100px',
+                       filterable: false,
+                       columntype: 'button',
+                        
+                       cellsrenderer: function () {
+                           return "Edit";
+                       },
+                       buttonclick: function (row) {
+                           // open the popup window when the user clicks a button.
+                           process = 'edit';
+                           editrow = row;
+                           // get the clicked row's data and initialize the input fields.
+                           var dataRecord = $("#dgrid").jqxGrid('getrowdata', editrow);
+                           $("#DepartmentId").val(dataRecord.DepartmentId);
+                           $("#DepartmentName1").val(dataRecord.DepartmentName);
+                           $("#DepartmentDescription").val(dataRecord.DepartmentDescription);
+                           // show the popup window.
+                           $("#popupWindowDepartment").jqxWindow('open');
+                       }
+                   }
+               ]
+           });
+        $("#popupWindowDepartment").jqxWindow({
+            width: 2000, theme: 'ui-start', resizable: false, isModal: true, autoOpen: false, cancelButton: $("#CancelDepartment"), modalOpacity: 0.01
+        });
+        $("#popupWindowDepartment").on('open', function () {
+            if (process == 'edit')
+                $("#DepartmentName1").jqxInput('selectAll');
+            if (process == 'add') {
+
+            }
+
+
+        });
+
+        $("#CancelDepartment").jqxButton({ theme: 'ui-start' });
+        $("#SaveDepartment").jqxButton({ theme: 'ui-start' });
+        // update the edited row when the user clicks the 'Save' button.
+        $("#SaveDepartment").click(function () {
+            if (process == 'edit') {
+                if (editrow >= 0) {
+                    departmentsaveData();
+
+                }
+            }
+            else if (process == 'add') {
+                addDepartment();
+            }
+        });
+        ///////////////initialize titles tjqxgrid
+        $("#tgrid").jqxGrid(
+            {
+                width: 1250,
+                source: tdataAdapter,
+                sortable: true,
+                showfilterrow: true,
+                filterable: true,
+                pageable: true,
+                autoheight: true,
+                theme: 'ui-start',
+                showtoolbar: true,
+                rendertoolbar: function (toolbar) {
+                    var me = this;
+                    var container = $("<div style='margin: 5px;'></div>");
+                    toolbar.append(container);
+                    container.append('<input id="addtitlerowbutton" type="button" value="Add New Row" />');
+
+                    container.append('<input style="margin-left: 5px;" id="deletetitlerowbutton" type="button" value="Delete Selected Row" />');
+
+                    $("#addtitlerowbutton").jqxButton({ theme: 'ui-start' });
+
+                    $("#deletetitlerowbutton").jqxButton({ theme: 'ui-start' });
+
+
+                    // create new row.
+                    $("#addtitlerowbutton").on('click', function () {
+                        process = 'add';
+                        $("#TitleName1").val(' ');
+                        $("#TitleDescription").val(' ');
+                        $("#popupWindowTitle").jqxWindow('open');
+                    });
+                    // delete row.
+                    $("#deletetitlerowbutton").on('click', function () {
+                        var Identity = $("#TitleId").val();
+                        deleteTitleData(Identity);
+                        $('#tgrid').jqxGrid('refreshdata');
+
+                    });
+                },
+                columns: [
+                    //{ text: "TitleId", datafield: "TitleId" },
+                    { text: "TitleName", datafield: "TitleName" },
+                    { text: "TitleDescription", datafield: "TitleDescription" },
+                    {
+                        text: ' ',
+                        datafield: 'Edit',
+                        width: '100px',
+                        filterable: false,
+                        columntype: 'button',
+                        cellsrenderer: function () {
+                            return "Edit";
+                        },
+                        buttonclick: function (row) {
+                            // open the popup window when the user clicks a button.
+                            process = 'edit';
+                            editrow = row;
+                            // get the clicked row's data and initialize the input fields.
+                            var dataRecord = $("#tgrid").jqxGrid('getrowdata', editrow);
+                            $("#TitleId").val(dataRecord.TitleId);
+                            $("#TitleName1").val(dataRecord.TitleName);
+                            $("#TitleDescription").val(dataRecord.TitleDescription);
+                            // show the popup window.
+                            $("#popupWindowTitle").jqxWindow('open');
+                        }
+                    }
+                ]
+            });
+        $("#popupWindowTitle").jqxWindow({
+            width: 2000, theme: 'ui-start', resizable: false, isModal: true, autoOpen: false, cancelButton: $("#CancelTitle"), modalOpacity: 0.01
+        });
+        $("#popupWindowTitle").on('open', function () {
+            if (process == 'edit')
+                $("#TitleName").jqxInput('selectAll');
+            if (process == 'add') {
+
+            }
+        });
+
+        $("#CancelTitle").jqxButton({ theme: 'ui-start' });
+        $("#SaveTitle").jqxButton({ theme: 'ui-start' });
+        // update the edited row when the user clicks the 'Save' button.
+        $("#SaveTitle").click(function () {
+            if (process == 'edit') {
+                if (editrow >= 0) {
+                    titlesaveData();
+                }
+            }
+            else if (process == 'add') {
+                addTitle();
+            }
+        });
+        var initrowdetails = function (index, parentElement, gridElement, datarecord) {
+            var tabsdiv = null;
+            var information = null;
+            //var notes = null;
+            tabsdiv = $($(parentElement).children()[0]);
+            if (tabsdiv != null) {
+                information = tabsdiv.find('.information');
+                //notes = tabsdiv.find('.notes');
+                var title = tabsdiv.find('.title');
+                title.text(datarecord.firstname);
+                var container = $('<div style="margin: 5px;"></div>')
+                container.appendTo($(information));
+                var photocolumn = $('<div style="float: left; width: 15%;"></div>');
+                var leftcolumn = $('<div style="float: left; width: 45%;"></div>');
+                var rightcolumn = $('<div style="float: left; width: 40%;"></div>');
+                container.append(photocolumn);
+                container.append(leftcolumn);
+                container.append(rightcolumn);
+                var photo = $("<div class='jqx-rc-all' style='margin: 10px;'><b>Photo:</b></div>");
+                var image = $("<div style='margin-top: 10px;'></div>");
+                var img = $('<img height="120" src="' + (datarecord.Picture == null ? "../Images/orderedList0.png" : datarecord.Picture) + '"</img>');
+                //var imgurl = '../../images/' + datarecord.firstname.toLowerCase() + '.png';
+                //var img = $('<img height="60" src="' + imgurl + '"/>');
+                //var image = "<img src='data:image/png;base64," + datarecord.Picture + "'></img>"
+                image.append(img);
+                image.appendTo(photo);
+                photocolumn.append(photo);
+                var firstname = "<div style='margin: 10px;'><b>First Name:</b> " + datarecord.PersonName + "</div>";
+                var lastname = "<div style='margin: 10px;'><b>Last Name:</b> " + datarecord.PersonSurname + "</div>";
+                var Birthdate = "<div style='margin: 10px;'><b>Birthdate:</b> " + new Date(datarecord.Birthdate).toDateString() + "</div>";
+                var Email = "<div style='margin: 10px;'><b>Email:</b> " + datarecord.Email + "</div>";
+                $(leftcolumn).append(firstname);
+                $(leftcolumn).append(lastname);
+                $(leftcolumn).append(Birthdate);
+                $(leftcolumn).append(Email);
+                var PhoneNumber1 = "<div style='margin: 10px;'><b>PhoneNumber1:</b> " + datarecord.PhoneNumber1 + "</div>";
+                var PhoneNumber2 = "<div style='margin: 10px;'><b>PhoneNumber2:</b> " +((datarecord.PhoneNumber2 == null) ? "Belirtilmemiş." : datarecord.PhoneNumber2) + "</div>";
+
+                var HireDate = "<div style='margin: 10px;'><b>Hire Date:</b> " + new Date(datarecord.HireDate).toDateString() + "</div>";
+                var DepartmentName = "<div style='margin: 10px;'><b>Department Name:</b> " + datarecord.DepartmentName + "</div>";
+                var TitleName = "<div style='margin: 10px;'><b>Title Name:</b> " + datarecord.TitleName + "</div>";
+
+                $(rightcolumn).append(PhoneNumber1);
+                if (PhoneNumber2 == null) {
+                    var PhoneNumber2 = "<div style='margin: 10px;'><b>PhoneNumber2: bulunamadı</b></div>";
+                }
+                
+                //$(rightcolumn).append(image);
+                $(rightcolumn).append(PhoneNumber2);
+                $(rightcolumn).append(HireDate);
+                $(rightcolumn).append(DepartmentName);
+                $(rightcolumn).append(TitleName);
+
+                //var notescontainer = $('<div style="white-space: normal; margin: 5px;"><span>' + datarecord.notes + '</span></div>');
+                // $(notes).append(notescontainer);
+                $(tabsdiv).jqxTabs({ width: 1000, height: 250, theme: 'ui-start' });
+            }
+        }
+
+        var file;
+        ////////////// initialize employees jqxGrid
+        $("#grid").jqxGrid(
+            {
+
+                width: 1250,
+                source: dataAdapter,
+                sortable: true,
+                //editable:true,
+                showfilterrow: true,
+                filterable: true,
+
+                pageable: true,
+                autoheight: true,
+                //selectionmode: 'multiplecellsextended',
+                theme: 'ui-start',
+                showtoolbar: true,
+                rowdetails: true,
+                rowdetailstemplate: { rowdetails: "<div style='margin: 10px;'><ul style='margin-left: 30px;'><li class='title'>İnformation</li></ul><div class='information'></div></div>", rowdetailsheight: 250 },
+                ready: function () {
+                    //$("#grid").jqxGrid('showrowdetails', 0);
+                    //$("#grid").jqxGrid('showrowdetails', 1);
+                },
+                initrowdetails: initrowdetails,
+                rendertoolbar: function (toolbar) {
+                    var me = this;
+                    var container = $("<div style='margin: 5px;'></div>");
+                    toolbar.append(container);
+                    container.append('<input id="addrowbutton" type="button" value="Add New Row" />');
+
+                    container.append('<input style="margin-left: 5px;" id="deleterowbutton" type="button" value="Delete Selected Row" />');
+
+                    $("#addrowbutton").jqxButton({theme:'ui-start'});
+
+                    $("#deleterowbutton").jqxButton({ theme: 'ui-start' });
+
+
+                    // create new row.
+                    $("#addrowbutton").on('click', function () {
+                        process = 'add';
+                        $("#PersonName").val('');
+                        $("#PersonSurname").val('');
+                        $("#Birthdate").val('');
+                        $("#Email").val('');
+                        $("#PhoneNumber1").val('');
+                        $("#PhoneNumber2").val('');
+                        $("#HireDate").val('');
+
+                        $('#popupWindow').on('open', function (event) {
+                            // Some code here.
+                            $("#imgg").on('change', prepareUpload);
+                            function prepareUpload(event) {
+                                file = event.target.files[0];
+                            }
+                        });
+
+                        $("#popupWindow").jqxWindow('open');
+                    });
+                    // delete row.
+                    $("#deleterowbutton").on('click', function () {
+                        var Identity = $("#Identity").val();
+                        deleteData(Identity);
+                        $('#grid').jqxGrid('refreshdata');
+
+                    });
+                },
+
+                columns: [
+                    //{ text: "Identity", datafield: "Identity", width: '60px' },
+                    { text: "PersonName", datafield: "PersonName", width: '100px' },
+                    { text: "PersonSurname", datafield: "PersonSurname", width: '120px' },
+                    //{ text: "Birthdate", datafield: "Birthdate", width: '100px', cellsformat: 'dd.MM.yyyy' },
+                    //{ text: "Email", datafield: "Email", width: '180px' },
+                    //{ text: "PhoneNumber1", datafield: "PhoneNumber1", width: '100px' },
+                   //{ text: "PhoneNumber2", datafield: "PhoneNumber2", width: '100px' },
+
+                    { text: "DepartmentName", datafield: "DepartmentName" },
+                    { text: "TitleName", datafield: "TitleName" },
+                    { text: "HireDate", datafield: "HireDate", width: '100px', cellsformat: 'dd.MM.yyyy' },
+
+
+
+
+
+
+                    {
+                        text: ' ',
+                        datafield: 'Edit',
+                        width: '100px',
+                        filterable: false,
+                        columntype: 'button',
+                        cellsrenderer: function () {
+                            return "Edit";
+                        }, buttonclick: function (row) {
+                            // open the popup window when the user clicks a button.
+                            process = 'edit';
+                            editrow = row;
+                            // get the clicked row's data and initialize the input fields.
+                            var dataRecord = $("#grid").jqxGrid('getrowdata', editrow);
+                            $("#Identity").val(dataRecord.Identity);
+                            $("#PersonName").val(dataRecord.PersonName);
+                            $("#PersonSurname").val(dataRecord.PersonSurname);
+                            //$("#Birthdate").val(dataRecord.Birthdate);
+                            $("#Birthdate").val(dataRecord.Birthdate);
+                            $("#Email").val(dataRecord.Email);
+                            $("#PhoneNumber1").val(dataRecord.PhoneNumber1);
+                            $("#PhoneNumber2").val(dataRecord.PhoneNumber2);
+                            //$("#HireDate").val(dataRecord.HireDate);
+                            $("#HireDate").val(dataRecord.HireDate);
+                            // $("#DepartmentName").val(dataRecord.DepartmentName);
+                            //$("#DepartmentName").jqxDropDownList('selectIndex', ($("#DepartmentName").jqxDropDownList('getItemByValue', dataRecord.DepartmentId).index));
+                            //$("#TitleName").jqxDropDownList('selectIndex', ($("#TitleName").jqxDropDownList('getItemByValue', dataRecord.TitleId).index));
+
+
+                            //TODO:Dropdownlist seçili hale getirilecek
+                            //$("#TitleName").val(dataRecord.TitleName);
+
+                            $('#popupWindow').on('open', function (event) {
+                                // Some code here.
+                                var file;
+                                $("#imgg").on('change', prepareUpload);
+                                function prepareUpload(event) {
+                                    file = event.target.files[0];
+                                }
+                            });
+
+                            // show the popup window.
+                            $("#popupWindow").jqxWindow('open');
+                        }
+                    }
+                ]
+            });
+
+
+        $("#popupWindow").jqxWindow({
+            width: 2000, theme: 'ui-start', resizable: false, isModal: true, autoOpen: false, cancelButton: $("#Cancel"), modalOpacity: 0.01
+        });
+        $("#popupWindow").on('open', function () {
+            if (process == 'edit')
+                $("#PersonName").jqxInput('selectAll');
+            if (process == 'add') {
+
+            }
+
+        });
+        $("#Cancel").jqxButton();
+        $("#Save").jqxButton();
+        // update the edited row when the user clicks the 'Save' button.
+        $("#Save").click(function () {
+            if (process == 'edit') {
+                if (editrow >= 0) {
+                    saveData();
+
+                }
+            }
+            else if (process == 'add') {
+                //loadFile();
+                //alert(markup.valueOf());
+                //var pic = Base64Binary.decodeArrayBuffer(markup);
+                addPerson(srcDeneme);
+            }
+        });
+        var srcDeneme;
+        $("#imgSave").click(function () {
+            
+            var filesSelected = document.getElementById("imgg").files;
+            if (filesSelected.length > 0) {
+
+                var fileToLoad = filesSelected[0];
+
+                var fileReader = new FileReader();
+
+                fileReader.onload = function (fileLoadedEvent) {
+                    var srcData = fileLoadedEvent.target.result; // <--- data: base64
+                    //alert(srcData);
+                    var newImage = document.createElement('img');
+                    newImage.id = "gel";
+                    newImage.height = 120;
+                    newImage.src = srcData;
+
+                    document.getElementById("imgTest").innerHTML = newImage.outerHTML;
+                    alert("Converted Base64 version is " + document.getElementById("imgTest").innerHTML);
+                }
+                fileReader.readAsDataURL(fileToLoad);
+                fileReader.onloadend = function (fileLoadedEvent) {
+                    srcDeneme = fileLoadedEvent.target.result;
+                }
+            }
+        });
+    });
+    ///////////////////////////////
+    var input, file, fr;
+    function loadFile() {
+
+        input = document.getElementById('imgg');
+        file = input.files[0];
+        fr = new FileReader();
+        fr.onload = receivedText;
+        fr.readAsText(file);
+        function receivedText() {
+            showResult(fr, "Text");
+            fr = new FileReader();
+            fr.onload = receivedBinary;
+            fr.readAsBinaryString(file);
+        }
+
+        function receivedBinary() {
+            showResult(fr, "Binary");
+        }
+    }
+    var markup, result, n, aByte, byteStr;
+    function showResult(fr, label) {
+
+
+        markup = [];
+        result = fr.result;
+        for (n = 0; n < result.length; ++n) {
+            aByte = result.charCodeAt(n);
+            byteStr = aByte.toString(16);
+            if (byteStr.length < 2) {
+                byteStr = "0" + byteStr;
+            }
+            markup.push(byteStr);
+        }
+    }
+    function bin2String() {
+        var result = "";
+        //alert(markup.length);
+        for (var i = 0; i < markup.length; i++) {
+            result += String.fromCharCode(parseInt(markup[i], 2));
+        }
+        return result;
+    }
+
+   
+
+
+    ///////////////////////////
+
+
+
+
+
+</script>
+
+<body class='default'>
+    @*<div id='jqxWidget'>*@
+    <div id='jqxTabs'>
+        <ul>
+            <li style="margin-left: 960px;">Emloyees</li>
+            <li>Titles</li>
+            <li>Departments</li>
+        </ul>
+        <div>
+            <div id="grid"></div>
+
+            @*<body class='default'>*@
+            <div id='jqxWidget'>
+
+                <div style="margin-top: 30px;">
+                    <div id="cellbegineditevent"></div>
+                    <div style="margin-top: 10px;" id="cellendeditevent"></div>
+                </div>
+                <div id="popupWindow">
+
+                    <div>Edit</div>
+                    <div style="overflow: hidden;">
+
+                        <table>
+                            <tr>
+                                <td align="right">Identity:</td>
+                                <td align="left"><input readonly id="Identity" /></td>
+                            </tr>
+                            <tr>
+                                <td align="right">PersonName:</td>
+                                <td align="left"><input id="PersonName" /></td>
+                            </tr>
+                            <tr>
+                                <td align="right">PersonSurname:</td>
+                                <td align="left"><input id="PersonSurname" /></td>
+                            </tr>
+                            @*<tr>
+                                    <td align="right">Birthdate:</td>
+                                    <td align="left"><input id="Birthdate" /></td>
+                                </tr>*@
+                            <tr>
+                                <td align="right">Email:</td>
+                                <td align="left"><input id="Email" /></td>
+                            </tr>
+                            <tr>
+                                <td align="right">PhoneNumber1:</td>
+                                <td align="left"><input id="PhoneNumber1" /></td>
+                            </tr>
+                            <tr>
+                                <td align="right">PhoneNumber2:</td>
+                                <td align="left"><input id="PhoneNumber2" /></td>
+                            </tr>
+                        </table>
+                        <div>
+                            Birthdate:
+                            <div id="Birthdate" style="text-align:center;"></div>
+                        </div>
+                        <div>
+                            HireDate:
+                            <div id="HireDate" style="text-align:center;"></div>
+                        </div>
+                        <div>
+                            Title:
+                            <div id="TitleName" style="text-align:center;"></div>
+                        </div>
+                        <div>
+                            Department:
+                            <div id="DepartmentName" style="text-align:center;"></div>
+                        </div>
+                        
+                            @*<div id="imgTest"></div>*@
+                            <input type="file" id="imgg" />
+                            <input type="button" id="imgSave" value="Save" />
+                            <input style="margin-right: 5px;" type="button" id="Save" value="Save" /><input id="Cancel" type="button" value="Cancel" />
+
+                        </div>
+                </div>
+            </div>
+            @*</body>*@
+
+
+        </div>
+        <div>
+            <div id="tgrid"></div>
+
+            @*<body class='default'>*@
+            <div id='tjqxWidget'>
+
+                <div style="margin-top: 30px;">
+                    <div id="cellbegineditevent"></div>
+                    <div style="margin-top: 10px;" id="cellendeditevent"></div>
+                </div>
+                <div id="popupWindowTitle">
+
+                    <div>Edit</div>
+                    <div style="overflow: hidden;">
+
+                        <table>
+                            <tr>
+                                <td align="right">TitleId:</td>
+                                <td align="left"><input readonly id="TitleId" /></td>
+                            </tr>
+                            <tr>
+                                <td align="right">TitleName:</td>
+                                <td align="left"><input id="TitleName1" /></td>
+                            </tr>
+                            <tr>
+                                <td align="right">TitleDescription:</td>
+                                <td align="left"><input id="TitleDescription" /></td>
+                            </tr>
+
+                        </table>
+                        <input style="margin-right: 5px;" type="button" id="SaveTitle" value="Save" /><input id="CancelTitle" type="button" value="Cancel" />
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+        <div>
+            <div id="dgrid"></div>
+
+            @*<body class='default'>*@
+            <div id='djqxWidget'>
+
+                <div style="margin-top: 30px;">
+                    <div id="cellbegineditevent"></div>
+                    <div style="margin-top: 10px;" id="cellendeditevent"></div>
+                </div>
+                <div id="popupWindowDepartment">
+
+                    <div>Edit</div>
+                    <div style="overflow: hidden;">
+
+                        <table>
+                            <tr>
+                                <td align="right">DepartmentId:</td>
+                                <td align="left"><input readonly id="DepartmentId" /></td>
+                            </tr>
+                            <tr>
+                                <td align="right">DepartmentName:</td>
+                                <td align="left"><input id="DepartmentName1" /></td>
+                            </tr>
+                            <tr>
+                                <td align="right">DepartmentDescription:</td>
+                                <td align="left"><input id="DepartmentDescription" /></td>
+                            </tr>
+                        </table>
+                        <input style="margin-right: 5px;" type="button" id="SaveDepartment" value="Save" /><input id="CancelDepartment" type="button" value="Cancel" />
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</body>
+
+@*</div>*@
+
